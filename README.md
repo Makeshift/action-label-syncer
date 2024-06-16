@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: brpaz/action-label-syncer@v1
+      - uses: brpaz/action-label-syncer@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -82,13 +82,42 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: brpaz/action-label-syncer@v1
+      - uses: brpaz/action-label-syncer@master
         with:
           manifest: path/to/manifest/labels.yml
           repository: |
               owner/repository-1
               owner/repository-2
           token: ${{ secrets.PERSONAL_TOKEN }}
+```
+
+## Permissions
+
+If your workflow is using custom permissions, make sure to set `issues: write` permission for this action to work.
+
+Ex:
+
+```yaml
+name: Sync labels
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - path/to/manifest/labels.yml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      content: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: brpaz/action-label-syncer@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          manifest: path/to/manifest/labels.yml
 ```
 
 ## Project using action-label-syncer
