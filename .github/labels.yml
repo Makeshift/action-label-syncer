@@ -13,3 +13,6 @@
 - color: "008672"
   description: Extra attention is needed
   name: help wanted
+- color: "AAAAAA"
+  description: Test
+  name: test
