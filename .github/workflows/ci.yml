@@ -15,3 +15,8 @@ jobs:
 
       - name: Build
         run: go build cmd/action-label-syncer/main.go
+
+      - name: Test
+        uses: ./
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
