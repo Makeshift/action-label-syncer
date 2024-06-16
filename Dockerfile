@@ -1,8 +1,10 @@
-FROM golang:1.13 AS build
+FROM golang:1.22-alpine3.20 AS build
 
 WORKDIR /go/src/app
+COPY go.mod go.sum ./
+RUN go mod download
+
 COPY . /go/src/app
-RUN go get -d -v ./...
 RUN go build -o /go/bin/app cmd/action-label-syncer/main.go
 
 FROM gcr.io/distroless/base

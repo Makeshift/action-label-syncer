@@ -17,9 +17,9 @@ package github
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v62/github"
 	"golang.org/x/oauth2"
 	"golang.org/x/sync/errgroup"
 	"gopkg.in/yaml.v2"
@@ -27,7 +27,6 @@ import (
 
 type Client struct {
 	githubClient *github.Client
-	token        string
 }
 
 type Label struct {
@@ -37,7 +36,7 @@ type Label struct {
 }
 
 func FromManifestToLabels(path string) ([]Label, error) {
-	buf, err := ioutil.ReadFile(path)
+	buf, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +82,12 @@ func (c *Client) SyncLabels(ctx context.Context, owner, repo string, labels []La
 				if ok {
 					return nil
 				}
-				return c.deleteLabel(ctx, owner, repo, currentLabel.Name)
+				if err := c.deleteLabel(ctx, owner, repo, currentLabel.Name); err != nil {
+					return fmt.Errorf("failed to delete label: %s on %s/%s: %w", currentLabel.Name, owner, repo, err)
+				}
+
+				fmt.Printf("label: %s deleted on %s/%s\n", currentLabel.Name, owner, repo)
+				return nil
 			})
 		}
 
@@ -98,10 +102,18 @@ func (c *Client) SyncLabels(ctx context.Context, owner, repo string, labels []La
 		eg.Go(func() error {
 			currentLabel, ok := currentLabelMap[l.Name]
 			if !ok {
-				return c.createLabel(ctx, owner, repo, l)
+				if err := c.createLabel(ctx, owner, repo, l); err != nil {
+					return fmt.Errorf("failed to create label: %+v on %s/%s: %w", l, owner, repo, err)
+				}
+
+				fmt.Printf("label: %+v created on: %s/%s\n", l, owner, repo)
 			}
 			if currentLabel.Description != l.Description || currentLabel.Color != l.Color {
-				return c.updateLabel(ctx, owner, repo, l)
+				if err := c.updateLabel(ctx, owner, repo, l); err != nil {
+					return fmt.Errorf("failed to update label: %+v on %s/%s: %w", l, owner, repo, err)
+				}
+
+				fmt.Printf("label %+v updated on: %s/%s\n", l, owner, repo)
 			}
 			fmt.Printf("label: %+v not changed on %s/%s\n", l, owner, repo)
 			return nil
@@ -118,7 +130,6 @@ func (c *Client) createLabel(ctx context.Context, owner, repo string, label Labe
 		Color:       &label.Color,
 	}
 	_, _, err := c.githubClient.Issues.CreateLabel(ctx, owner, repo, l)
-	fmt.Printf("label: %+v created on: %s/%s\n", label, owner, repo)
 	return err
 }
 
@@ -154,12 +165,11 @@ func (c *Client) updateLabel(ctx context.Context, owner, repo string, label Labe
 		Color:       &label.Color,
 	}
 	_, _, err := c.githubClient.Issues.EditLabel(ctx, owner, repo, label.Name, l)
-	fmt.Printf("label %+v updated on: %s/%s\n", label, owner, repo)
+
 	return err
 }
 
 func (c *Client) deleteLabel(ctx context.Context, owner, repo, name string) error {
 	_, err := c.githubClient.Issues.DeleteLabel(ctx, owner, repo, name)
-	fmt.Printf("label: %s deleted from: %s/%s\n", name, owner, repo)
 	return err
 }

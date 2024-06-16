@@ -1,6 +1,6 @@
 name: "Label Syncer"
 description: "Sync GitHub labels in the declarative way."
-author: "micnncim"
+author: "brpaz"
 inputs:
   manifest:
     description: "File path of YAML manifest for labels"
