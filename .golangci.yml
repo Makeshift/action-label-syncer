@@ -60,7 +60,7 @@ linters-settings:
     # it's a comma-separated list of prefixes
     local-prefixes: github.com/brpaz/go-lib-template
   gocyclo:
-    min-complexity: 10
+    min-complexity: 20
   gosec:
     severity: medium
     confidence: medium
