@@ -18,7 +18,7 @@ inputs:
     default: true
 runs:
   using: "docker"
-  image: "docker://gcr.io/makeshift/action-label-syncer"
+  image: "docker://ghcr.io/makeshift/action-label-syncer"
 branding:
   icon: circle
   color: black
