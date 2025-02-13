@@ -1,0 +1,16 @@
+name: Build image
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          docker build -t 'ghcr.io/makeshift/action-label-syncer:latest' .
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker push 'ghcr.io/makeshift/action-label-syncer:latest'
